@@ -1,0 +1,2173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Municipal Street Light Fault Register &amp; Repair Tracker</title>
+
+    <!-- ===== STYLES ===== -->
+    <style>
+        /* ===== CSS VARIABLES / THEMING – Elegant Gold & Violet ===== */
+        :root {
+            --bg-body: #f8f6f2;
+            --bg-card: #ffffff;
+            --bg-header: #1a1a3a;
+            --bg-header-text: #f0ece3;
+            --text-primary: #1f1a2e;
+            --text-secondary: #3d3557;
+            --text-muted: #8a7a9e;
+            --border-color: #e2dce8;
+            --shadow: 0 4px 16px rgba(26, 26, 58, 0.10);
+            --shadow-hover: 0 8px 30px rgba(26, 26, 58, 0.18);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --transition: 0.25s ease;
+            --color-pending: #c94a4a;
+            --color-progress: #d99f3c;
+            --color-repaired: #3c8f5e;
+            --color-primary: #7b2fbe;
+            --color-primary-hover: #5a1f8a;
+            --color-gold: #d4af37;
+            --color-gold-light: #f0e2b0;
+            --font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --toast-bg: #1a1a3a;
+            --toast-text: #f0ece3;
+            --modal-overlay: rgba(26, 26, 58, 0.55);
+        }
+
+        /* Dark Mode */
+        [data-theme="dark"] {
+            --bg-body: #12101c;
+            --bg-card: #1e1a2e;
+            --bg-header: #0c0a18;
+            --bg-header-text: #e0dacf;
+            --text-primary: #e8e2f0;
+            --text-secondary: #c4b8d8;
+            --text-muted: #8a7a9e;
+            --border-color: #3a2e4e;
+            --shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+            --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.7);
+            --toast-bg: #e8e2f0;
+            --toast-text: #12101c;
+            --modal-overlay: rgba(0, 0, 0, 0.7);
+            --color-pending: #d97a7a;
+            --color-progress: #d9b84a;
+            --color-repaired: #5cb085;
+        }
+
+        /* ===== RESET & BASE ===== */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--bg-body);
+            color: var(--text-primary);
+            padding: 20px;
+            min-height: 100vh;
+            transition: background var(--transition), color var(--transition);
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-body);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-primary);
+            border-radius: 10px;
+        }
+
+        /* ===== CONTAINER ===== */
+        .app-container {
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        /* ===== HEADER ===== */
+        .app-header {
+            background: var(--bg-header);
+            color: var(--bg-header-text);
+            padding: 18px 28px;
+            border-radius: var(--radius);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+            transition: background var(--transition), color var(--transition);
+            border-bottom: 3px solid var(--color-gold);
+        }
+
+        .app-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .app-header .brand .icon {
+            font-size: 28px;
+            color: var(--color-gold);
+        }
+
+        .app-header .brand h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            line-height: 1.2;
+        }
+        .app-header .brand h1 span {
+            color: var(--color-gold);
+        }
+
+        .app-header .brand h1 small {
+            font-weight: 400;
+            font-size: 13px;
+            opacity: 0.75;
+            display: block;
+            color: var(--bg-header-text);
+        }
+
+        .header-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-controls .clock {
+            font-size: 14px;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 6px 14px;
+            border-radius: 30px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        .header-controls .clock .date-display {
+            opacity: 0.7;
+            font-weight: 400;
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .theme-toggle:hover {
+            background: rgba(212, 175, 55, 0.25);
+        }
+
+        /* ===== TOP BAR (search + filters + add) ===== */
+        .top-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 24px;
+            background: var(--bg-card);
+            padding: 16px 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: background var(--transition), box-shadow var(--transition);
+            border-left: 4px solid var(--color-gold);
+        }
+
+        .top-bar .search-wrap {
+            flex: 1 1 240px;
+            min-width: 160px;
+            position: relative;
+        }
+
+        .top-bar .search-wrap input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 30px;
+            font-size: 14px;
+            background: var(--bg-body);
+            color: var(--text-primary);
+            transition: border var(--transition), box-shadow var(--transition);
+            outline: none;
+        }
+        .top-bar .search-wrap input:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(123, 47, 190, 0.2);
+        }
+        .top-bar .search-wrap .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 16px;
+            pointer-events: none;
+        }
+
+        .top-bar .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .top-bar .filter-group select {
+            padding: 9px 16px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 30px;
+            font-size: 13px;
+            background: var(--bg-body);
+            color: var(--text-primary);
+            cursor: pointer;
+            outline: none;
+            transition: border var(--transition);
+            min-width: 120px;
+        }
+        .top-bar .filter-group select:focus {
+            border-color: var(--color-primary);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 20px;
+            border: none;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--transition), transform var(--transition),
+                box-shadow var(--transition);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: var(--color-primary-hover);
+            box-shadow: 0 4px 12px rgba(123, 47, 190, 0.4);
+        }
+
+        .btn-success {
+            background: var(--color-repaired);
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #2d7a4e;
+        }
+
+        .btn-danger {
+            background: var(--color-pending);
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #b03a3a;
+        }
+
+        .btn-warning {
+            background: var(--color-progress);
+            color: #fff;
+        }
+        .btn-warning:hover {
+            background: #c48a2a;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        .btn-outline:hover {
+            background: var(--bg-body);
+            border-color: var(--text-muted);
+        }
+
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 12px;
+        }
+
+        /* ===== DASHBOARD CARDS ===== */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .dash-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            box-shadow: var(--shadow);
+            transition: background var(--transition), box-shadow var(--transition),
+                transform var(--transition);
+            border-left: 4px solid var(--color-gold);
+            position: relative;
+            overflow: hidden;
+        }
+        .dash-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, var(--color-gold-light) 0%, transparent 70%);
+            opacity: 0.1;
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+        .dash-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .dash-card .label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .dash-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-top: 4px;
+            line-height: 1.2;
+            transition: all 0.3s ease;
+        }
+
+        .dash-card .value.animated {
+            animation: countUp 0.6s ease forwards;
+        }
+
+        @keyframes countUp {
+            0% {
+                opacity: 0.2;
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .dash-card.pending {
+            border-left-color: var(--color-pending);
+        }
+        .dash-card.pending .value {
+            color: var(--color-pending);
+        }
+        .dash-card.repaired {
+            border-left-color: var(--color-repaired);
+        }
+        .dash-card.repaired .value {
+            color: var(--color-repaired);
+        }
+        .dash-card.longest {
+            border-left-color: var(--color-progress);
+        }
+        .dash-card.longest .value {
+            color: var(--color-progress);
+            font-size: 20px;
+        }
+
+        /* ===== TABLE WRAPPER ===== */
+        .table-wrapper {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: background var(--transition), box-shadow var(--transition);
+            margin-bottom: 16px;
+            border-top: 3px solid var(--color-gold);
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 700px;
+        }
+
+        thead {
+            background: var(--bg-body);
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        thead th {
+            padding: 12px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--text-muted);
+            border-bottom: 2px solid var(--border-color);
+            cursor: default;
+            white-space: nowrap;
+        }
+
+        thead th.sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: color var(--transition);
+        }
+        thead th.sortable:hover {
+            color: var(--color-primary);
+        }
+        thead th.sortable .sort-indicator {
+            margin-left: 4px;
+            font-size: 10px;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: background var(--transition);
+        }
+        tbody tr:hover {
+            background: var(--bg-body);
+        }
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        tbody td {
+            padding: 11px 14px;
+            vertical-align: middle;
+            color: var(--text-secondary);
+        }
+
+        tbody td .status-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        .status-badge.pending {
+            background: #fce4e4;
+            color: var(--color-pending);
+        }
+        .status-badge.in-progress {
+            background: #faf0d7;
+            color: var(--color-progress);
+        }
+        .status-badge.repaired {
+            background: #dff0e6;
+            color: var(--color-repaired);
+        }
+        [data-theme="dark"] .status-badge.pending {
+            background: #4a1a1a;
+            color: #fc8181;
+        }
+        [data-theme="dark"] .status-badge.in-progress {
+            background: #4a3a1a;
+            color: #f6c445;
+        }
+        [data-theme="dark"] .status-badge.repaired {
+            background: #1a3a2a;
+            color: #68d391;
+        }
+
+        .actions-cell {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .actions-cell .btn {
+            padding: 4px 10px;
+            font-size: 11px;
+            border-radius: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-muted);
+        }
+        .empty-state .empty-icon {
+            font-size: 56px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+        .empty-state h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        .empty-state p {
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        /* ===== PAGINATION ===== */
+        .pagination-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: background var(--transition), box-shadow var(--transition);
+            gap: 12px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid var(--color-gold-light);
+        }
+
+        .pagination-wrap .info {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .pagination-controls button {
+            padding: 6px 14px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 20px;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .pagination-controls button:hover:not(:disabled) {
+            background: var(--color-primary);
+            color: #fff;
+            border-color: var(--color-primary);
+        }
+        .pagination-controls button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .pagination-controls .page-num {
+            padding: 6px 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--modal-overlay);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            padding: 20px;
+            backdrop-filter: blur(2px);
+            animation: fadeIn 0.25s ease;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-box {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            max-width: 560px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 28px 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transition: background var(--transition);
+            position: relative;
+            border-top: 4px solid var(--color-gold);
+        }
+
+        .modal-box .modal-close {
+            position: absolute;
+            top: 14px;
+            right: 18px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color var(--transition);
+            line-height: 1;
+        }
+        .modal-box .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-box h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+        .modal-box .subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-secondary);
+        }
+        .form-group label .required {
+            color: var(--color-pending);
+            margin-left: 2px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            background: var(--bg-body);
+            color: var(--text-primary);
+            transition: border var(--transition), box-shadow var(--transition);
+            outline: none;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(123, 47, 190, 0.15);
+        }
+        .form-group input.error,
+        .form-group select.error {
+            border-color: var(--color-pending);
+        }
+
+        .form-group .validation-msg {
+            font-size: 12px;
+            color: var(--color-pending);
+            margin-top: 4px;
+            display: none;
+        }
+        .form-group .validation-msg.visible {
+            display: block;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .form-actions .btn {
+            padding: 10px 28px;
+        }
+
+        /* ===== TOAST ===== */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 360px;
+            width: 100%;
+        }
+
+        .toast {
+            background: var(--toast-bg);
+            color: var(--toast-text);
+            padding: 14px 20px;
+            border-radius: var(--radius-sm);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideUp 0.35s ease forwards;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            border-left: 4px solid var(--color-gold);
+        }
+        .toast.hide {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .toast .toast-icon {
+            font-size: 20px;
+        }
+        .toast.success .toast-icon {
+            color: var(--color-repaired);
+        }
+        .toast.error .toast-icon {
+            color: var(--color-pending);
+        }
+        .toast.info .toast-icon {
+            color: var(--color-primary);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== LOADING SPINNER ===== */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--modal-overlay);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            backdrop-filter: blur(3px);
+        }
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--border-color);
+            border-top-color: var(--color-gold);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            .app-header {
+                padding: 14px 18px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .app-header .brand h1 {
+                font-size: 17px;
+            }
+            .header-controls {
+                justify-content: space-between;
+            }
+
+            .top-bar {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 14px 16px;
+            }
+            .top-bar .search-wrap {
+                flex: 1 1 auto;
+            }
+            .top-bar .filter-group {
+                flex-wrap: wrap;
+                justify-content: stretch;
+            }
+            .top-bar .filter-group select {
+                flex: 1 1 120px;
+                min-width: 0;
+            }
+
+            .dashboard-cards {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 12px;
+            }
+            .dash-card .value {
+                font-size: 24px;
+            }
+
+            .modal-box {
+                padding: 20px 18px;
+                margin: 10px;
+            }
+
+            .pagination-wrap {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .pagination-controls {
+                justify-content: center;
+            }
+
+            table {
+                font-size: 13px;
+                min-width: 600px;
+            }
+            thead th,
+            tbody td {
+                padding: 8px 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-header .brand .icon {
+                font-size: 22px;
+            }
+            .app-header .brand h1 {
+                font-size: 15px;
+            }
+            .header-controls .clock {
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+            .dash-card {
+                padding: 14px 16px;
+            }
+            .dash-card .value {
+                font-size: 20px;
+            }
+            .btn {
+                font-size: 12px;
+                padding: 7px 14px;
+            }
+            .modal-box h2 {
+                font-size: 18px;
+            }
+        }
+
+        /* ===== UTILITY ===== */
+        .text-muted {
+            color: var(--text-muted);
+        }
+        .text-center {
+            text-align: center;
+        }
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mt-16 {
+            margin-top: 16px;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .flex-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .hidden {
+            display: none !important;
+        }
+
+        /* Export button */
+        .export-btn {
+            background: var(--bg-body);
+            border: 1.5px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .export-btn:hover {
+            background: var(--color-primary);
+            color: #fff;
+            border-color: var(--color-primary);
+        }
+        [data-theme="dark"] .export-btn:hover {
+            background: var(--color-primary);
+            color: #fff;
+        }
+
+        /* ===== CONFIRM DIALOG (custom) ===== */
+        .confirm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--modal-overlay);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+            backdrop-filter: blur(2px);
+        }
+        .confirm-overlay.active {
+            display: flex;
+        }
+        .confirm-box {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 28px 32px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            border-top: 4px solid var(--color-gold);
+        }
+        .confirm-box h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        .confirm-box p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .confirm-box .confirm-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .confirm-box .confirm-actions .btn {
+            min-width: 80px;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== LOADING OVERLAY ===== -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- ===== CONFIRM DIALOG ===== -->
+    <div class="confirm-overlay" id="confirmOverlay">
+        <div class="confirm-box">
+            <h3>⚠️ Confirm Delete</h3>
+            <p id="confirmMessage">Are you sure you want to delete this record?</p>
+            <div class="confirm-actions">
+                <button class="btn btn-outline" id="confirmCancelBtn">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TOAST CONTAINER ===== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ===== MODAL ===== -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <button class="modal-close" id="modalCloseBtn" aria-label="Close">&times;</button>
+            <h2 id="modalTitle">Add New Complaint</h2>
+            <p class="subtitle" id="modalSubtitle">Fill in the details below.</p>
+
+            <form id="complaintForm" novalidate>
+                <!-- Pole ID -->
+                <div class="form-group">
+                    <label for="formPoleId">Pole ID <span class="required">*</span></label>
+                    <input type="text" id="formPoleId" placeholder="e.g. P-1024" required />
+                    <div class="validation-msg" id="formPoleIdError">Pole ID is required.</div>
+                </div>
+
+                <!-- Ward -->
+                <div class="form-group">
+                    <label for="formWard">Ward <span class="required">*</span></label>
+                    <input type="text" id="formWard" placeholder="e.g. Ward 5" required />
+                    <div class="validation-msg" id="formWardError">Ward is required.</div>
+                </div>
+
+                <!-- Street -->
+                <div class="form-group">
+                    <label for="formStreet">Street <span class="required">*</span></label>
+                    <input type="text" id="formStreet" placeholder="e.g. Main Street" required />
+                    <div class="validation-msg" id="formStreetError">Street is required.</div>
+                </div>
+
+                <!-- Reported Date -->
+                <div class="form-group">
+                    <label for="formReportedDate">Reported Date <span class="required">*</span></label>
+                    <input type="date" id="formReportedDate" required />
+                    <div class="validation-msg" id="formReportedDateError">Please enter a valid date (not in the future).</div>
+                </div>
+
+                <!-- Fault Type -->
+                <div class="form-group">
+                    <label for="formFaultType">Fault Type <span class="required">*</span></label>
+                    <select id="formFaultType" required>
+                        <option value="">— Select —</option>
+                        <option value="Bulb Failure">Bulb Failure</option>
+                        <option value="Pole Damage">Pole Damage</option>
+                        <option value="Wiring Issue">Wiring Issue</option>
+                        <option value="Light Flickering">Light Flickering</option>
+                        <option value="Complete Outage">Complete Outage</option>
+                        <option value="Dim Light">Dim Light</option>
+                        <option value="Timer Issue">Timer Issue</option>
+                        <option value="Sensor Failure">Sensor Failure</option>
+                        <option value="Physical Damage">Physical Damage</option>
+                        <option value="Electrical Fault">Electrical Fault</option>
+                    </select>
+                    <div class="validation-msg" id="formFaultTypeError">Please select a fault type.</div>
+                </div>
+
+                <!-- Status -->
+                <div class="form-group">
+                    <label for="formStatus">Status <span class="required">*</span></label>
+                    <select id="formStatus" required>
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Repaired">Repaired</option>
+                    </select>
+                    <div class="validation-msg" id="formStatusError">Please select a status.</div>
+                </div>
+
+                <!-- Repaired Date -->
+                <div class="form-group">
+                    <label for="formRepairedDate">Repaired Date</label>
+                    <input type="date" id="formRepairedDate" />
+                    <div class="validation-msg" id="formRepairedDateError">Repaired date is required when status is Repaired.</div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" id="formCancelBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="formSubmitBtn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== MAIN APP ===== -->
+    <div class="app-container">
+
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="brand">
+                <span class="icon">💡</span>
+                <h1>
+                    <span>Street Light</span> Fault Tracker
+                    <small>Municipal · Register &amp; Repair</small>
+                </h1>
+            </div>
+            <div class="header-controls">
+                <div class="clock">
+                    <span id="liveClock">--:--:--</span>
+                    <span class="date-display" id="liveDate">---</span>
+                </div>
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+                    🌙
+                </button>
+            </div>
+        </header>
+
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <div class="search-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search by Pole ID, Ward, Street, Fault Type..." />
+            </div>
+            <div class="filter-group">
+                <select id="statusFilter">
+                    <option value="">All Status</option>
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Repaired">Repaired</option>
+                </select>
+                <select id="wardFilter">
+                    <option value="">All Wards</option>
+                </select>
+                <button class="btn btn-primary" id="addBtn">➕ Add New</button>
+                <button class="export-btn" id="exportBtn">📥 CSV</button>
+            </div>
+        </div>
+
+        <!-- DASHBOARD CARDS -->
+        <div class="dashboard-cards" id="dashboardCards">
+            <div class="dash-card">
+                <div class="label">Total Complaints</div>
+                <div class="value" id="totalCount">0</div>
+            </div>
+            <div class="dash-card pending">
+                <div class="label">Pending</div>
+                <div class="value" id="pendingCount">0</div>
+            </div>
+            <div class="dash-card repaired">
+                <div class="label">Repaired</div>
+                <div class="value" id="repairedCount">0</div>
+            </div>
+            <div class="dash-card longest">
+                <div class="label">Longest Pending (days)</div>
+                <div class="value" id="longestPending">0</div>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-wrapper">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fault ID</th>
+                            <th>Pole ID</th>
+                            <th>Ward</th>
+                            <th>Street</th>
+                            <th>Reported Date</th>
+                            <th>Fault Type</th>
+                            <th>Status</th>
+                            <th>Repaired Date</th>
+                            <th class="sortable" data-sort="daysPending">Days Pending <span class="sort-indicator">↕</span></th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Rows rendered by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination-wrap">
+            <span class="info" id="paginationInfo">Showing 0 of 0</span>
+            <div class="pagination-controls">
+                <button id="prevPageBtn" disabled>◀ Prev</button>
+                <span class="page-num" id="pageIndicator">1</span>
+                <button id="nextPageBtn">Next ▶</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ===== SCRIPT: DATASET & APP ===== -->
+    <script>
+        // ============================================================
+        //  DATASET.JS  –  Sample dataset and initialisation
+        // ============================================================
+
+        /**
+         * SAMPLE_DATA – 24 realistic street light fault records.
+         * Each record: fault_id, pole_id, ward, street, reported_date,
+         * fault_type, status, repaired_date.
+         */
+        const SAMPLE_DATA = [{
+            fault_id: 'FLT-001',
+            pole_id: 'P-1024',
+            ward: 'Ward 3',
+            street: 'Main Street',
+            reported_date: '2026-01-10',
+            fault_type: 'Bulb Failure',
+            status: 'Repaired',
+            repaired_date: '2026-01-12'
+        }, {
+            fault_id: 'FLT-002',
+            pole_id: 'P-2056',
+            ward: 'Ward 5',
+            street: 'Oak Avenue',
+            reported_date: '2026-01-15',
+            fault_type: 'Pole Damage',
+            status: 'Pending',
+            repaired_date: ''
+        }, {
+            fault_id: 'FLT-003',
+            pole_id: 'P-3089',
+            ward: 'Ward 2',
+            street: 'Pine Road',
+            reported_date: '2026-01-18',
+            fault_type: 'Wiring Issue',
+            status: 'In Progress',
+            repaired_date: ''
+        }, {
+            fault_id: 'FLT-004',
+            pole_id: 'P-4123',
+            ward: 'Ward 7',
+            street: 'Cedar Lane',
+            reported_date: '2026-01-20',
+            fault_type: 'Light Flickering',
+            status: 'Repaired',
+            repaired_date: '2026-01-22'
+        }, {
+            fault_id: 'FLT-005',
+            pole_id: 'P-5147',
+            ward: 'Ward 4',
+            street: 'Maple Drive',
+            reported_date: '2026-01-22',
+            fault_type: 'Complete Outage',
+            status: 'Pending',
+            repaired_date: ''
+        }, {
+            fault_id: 'FLT-006',
+            pole_id: 'P-6182',
+            ward: 'Ward 1',
+            street: 'Elm Street',
+            reported_date: '2026-01-25',
+            fault_type: 'Dim Light',
+            status: 'Repaired',
+            repaired_date: '2026-01-28'
+        }, {
+            fault_id: 'FLT-007',
+            pole_id: 'P-7206',
+            ward: 'Ward 6',
+            street: 'Birch Boulevard',
+            reported_date: '2026-01-28',
+            fault_type: 'Timer Issue',
+            status: 'In Progress',
+            repaired_date: ''
+        }, {
+            fault_id: 'FLT-008',
+            pole_id: 'P-8239',
+            ward: 'Ward 3',
+            street: 'Main Street',
+            reported_date: '2026-02-01',
+            fault_type: 'Sensor Failure',
+            status: 'Pending',
+            repaired_date: ''
+        }, {
+            fault_id: 'FLT-009',
+            pole_id: 'P-9273',
+            ward: 'Ward 8',
+            street: 'Willow Way',
+            reported_date: '2026-02-03',
+            fault_type: 'Physical Damage',
+            status: 'Repaired',
+            repaired_date: '2026-02-05'
+        }, {
+            fault_id: 'FLT-010',
+            pole_id: 'P-1038',
+            ward: 'Ward 5',
+            street: 'Oak Avenue',
+            reported_date: '2026-02-05',
+            fault_type: 'Electrical Fault',
+            status: 'Pending',
+            repaired_date: ''
+        }, {
+            fault_id: 'FLT-011',
+            pole_id: 'P-1142',
+            ward: 'Ward 2',
+            street: 'Pine Road',
+            reported_date: '2026-02-08',
+            fault_type: 'Bulb Failure',
+            status: 'Repaired',
+            repaired_date: '2026-02-10'
+        }, {
+            fault_id: 'FLT-012',
+            pole_id: 'P-1256',
+            ward: 'Ward 9',
+            street: 'Chestnut Street',
+            reported_date: '2026-02-10',
+            fault_type: 'Pole Damage',
+            status: 'In Progress',
+            repaired_date: ''
+        }, {
+            fault_id: 'FLT-013',
+            pole_id: 'P-1369',
+            ward: 'Ward 4',
+            street: 'Maple Drive',
+            reported_date: '2026-02-12',
+            fault_type: 'Wiring Issue',
+            status: 'Repaired',
+            repaired_date: '2026-02-15'
+        }, {
+            fault_id: 'FLT-014',
+            pole_id: 'P-1473',
+            ward: 'Ward 1',
+            street: 'Elm Street',
+            reported_date: '2026-02-14',
+            fault_type: 'Light Flickering',
+            status: 'Pending',
+            repaired_date: ''
+        }, {
+            fault_id: 'FLT-015',
+            pole_id: 'P-1587',
+            ward: 'Ward 7',
+            street: 'Cedar Lane',
+            reported_date: '2025-12-20',
+            fault_type: 'Complete Outage',
+            status: 'Repaired',
+            repaired_date: '2025-12-28'
+        }, {
+            fault_id: 'FLT-016',
+            pole_id: 'P-1691',
+            ward: 'Ward 6',
+            street: 'Birch Boulevard',
+            reported_date: '2026-02-18',
+            fault_type: 'Dim Light',
+            status: 'Pending',
+            repaired_date: ''
+        }, {
+            fault_id: 'FLT-017',
+            pole_id: 'P-1705',
+            ward: 'Ward 8',
+            street: 'Willow Way',
+            reported_date: '2026-02-20',
+            fault_type: 'Timer Issue',
+            status: 'Repaired',
+            repaired_date: '2026-02-22'
+        }, {
+            fault_id: 'FLT-018',
+            pole_id: 'P-1819',
+            ward: 'Ward 3',
+            street: 'Main Street',
+            reported_date: '2026-02-22',
+            fault_type: 'Sensor Failure',
+            status: 'In Progress',
+            repaired_date: ''
+        }, {
+            fault_id: 'FLT-019',
+            pole_id: 'P-1923',
+            ward: 'Ward 5',
+            street: 'Oak Avenue',
+            reported_date: '2026-02-24',
+            fault_type: 'Physical Damage',
+            status: 'Pending',
+            repaired_date: ''
+        }, {
+            fault_id: 'FLT-020',
+            pole_id: 'P-2037',
+            ward: 'Ward 2',
+            street: 'Pine Road',
+            reported_date: '2026-02-26',
+            fault_type: 'Electrical Fault',
+            status: 'Repaired',
+            repaired_date: '2026-02-28'
+        }, {
+            fault_id: 'FLT-021',
+            pole_id: 'P-2141',
+            ward: 'Ward 4',
+            street: 'Maple Drive',
+            reported_date: '2025-11-05',
+            fault_type: 'Bulb Failure',
+            status: 'Repaired',
+            repaired_date: '2025-11-10'
+        }, {
+            fault_id: 'FLT-022',
+            pole_id: 'P-2255',
+            ward: 'Ward 9',
+            street: 'Chestnut Street',
+            reported_date: '2026-03-01',
+            fault_type: 'Pole Damage',
+            status: 'Pending',
+            repaired_date: ''
+        }, {
+            fault_id: 'FLT-023',
+            pole_id: 'P-2369',
+            ward: 'Ward 1',
+            street: 'Elm Street',
+            reported_date: '2026-03-03',
+            fault_type: 'Wiring Issue',
+            status: 'In Progress',
+            repaired_date: ''
+        }, {
+            fault_id: 'FLT-024',
+            pole_id: 'P-2473',
+            ward: 'Ward 7',
+            street: 'Cedar Lane',
+            reported_date: '2026-03-05',
+            fault_type: 'Complete Outage',
+            status: 'Repaired',
+            repaired_date: '2026-03-08'
+        }];
+
+        // ============================================================
+        //  SCRIPT.JS  –  Main application logic
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // ---- DOM refs ----
+            const $ = (sel) => document.querySelector(sel);
+            const $$ = (sel) => document.querySelectorAll(sel);
+
+            const tableBody = $('#tableBody');
+            const searchInput = $('#searchInput');
+            const statusFilter = $('#statusFilter');
+            const wardFilter = $('#wardFilter');
+            const totalCount = $('#totalCount');
+            const pendingCount = $('#pendingCount');
+            const repairedCount = $('#repairedCount');
+            const longestPending = $('#longestPending');
+            const addBtn = $('#addBtn');
+            const modalOverlay = $('#modalOverlay');
+            const modalCloseBtn = $('#modalCloseBtn');
+            const modalTitle = $('#modalTitle');
+            const modalSubtitle = $('#modalSubtitle');
+            const form = $('#complaintForm');
+            const formPoleId = $('#formPoleId');
+            const formWard = $('#formWard');
+            const formStreet = $('#formStreet');
+            const formReportedDate = $('#formReportedDate');
+            const formFaultType = $('#formFaultType');
+            const formStatus = $('#formStatus');
+            const formRepairedDate = $('#formRepairedDate');
+            const formSubmitBtn = $('#formSubmitBtn');
+            const formCancelBtn = $('#formCancelBtn');
+            const paginationInfo = $('#paginationInfo');
+            const prevPageBtn = $('#prevPageBtn');
+            const nextPageBtn = $('#nextPageBtn');
+            const pageIndicator = $('#pageIndicator');
+            const loadingOverlay = $('#loadingOverlay');
+            const confirmOverlay = $('#confirmOverlay');
+            const confirmMessage = $('#confirmMessage');
+            const confirmCancelBtn = $('#confirmCancelBtn');
+            const confirmDeleteBtn = $('#confirmDeleteBtn');
+            const themeToggle = $('#themeToggle');
+            const exportBtn = $('#exportBtn');
+            const liveClock = $('#liveClock');
+            const liveDate = $('#liveDate');
+
+            // ---- State ----
+            let complaints = [];
+            let currentPage = 1;
+            const PAGE_SIZE = 10;
+            let filteredData = [];
+            let sortKey = null;
+            let sortAsc = true;
+            let editingId = null;
+            let deleteTargetId = null;
+
+            // ---- Helpers ----
+            function generateId() {
+                const n = complaints.length + 1;
+                const pad = String(n).padStart(3, '0');
+                return 'FLT-' + pad;
+            }
+
+            function todayStr() {
+                return new Date().toISOString().split('T')[0];
+            }
+
+            function formatDate(d) {
+                if (!d) return '—';
+                const parts = d.split('-');
+                return parts[2] + '/' + parts[1] + '/' + parts[0];
+            }
+
+            function daysBetween(d1, d2) {
+                const a = new Date(d1);
+                const b = new Date(d2);
+                const diff = (b - a) / (1000 * 60 * 60 * 24);
+                return Math.max(0, Math.round(diff));
+            }
+
+            function calcDaysPending(record) {
+                if (record.status === 'Repaired' && record.repaired_date) {
+                    return daysBetween(record.reported_date, record.repaired_date);
+                }
+                return daysBetween(record.reported_date, todayStr());
+            }
+
+            function getWards() {
+                const set = new Set();
+                complaints.forEach(c => set.add(c.ward));
+                return Array.from(set).sort();
+            }
+
+            function getStatusBadge(status) {
+                const map = {
+                    'Pending': 'pending',
+                    'In Progress': 'in-progress',
+                    'Repaired': 'repaired'
+                };
+                return `<span class="status-badge ${map[status] || ''}">${status}</span>`;
+            }
+
+            // ---- Toast ----
+            function showToast(message, type = 'info') {
+                const container = $('#toastContainer');
+                const icons = {
+                    success: '✅',
+                    error: '❌',
+                    info: 'ℹ️'
+                };
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerHTML = `<span class="toast-icon">${icons[type] || 'ℹ️'}</span> ${message}`;
+                container.appendChild(toast);
+                setTimeout(() => {
+                    toast.classList.add('hide');
+                    setTimeout(() => toast.remove(), 350);
+                }, 3000);
+            }
+
+            // ---- Loading spinner ----
+            function showLoading(duration = 1000) {
+                return new Promise((resolve) => {
+                    loadingOverlay.classList.add('active');
+                    setTimeout(() => {
+                        loadingOverlay.classList.remove('active');
+                        resolve();
+                    }, duration);
+                });
+            }
+
+            // ---- LocalStorage ----
+            function loadFromStorage() {
+                try {
+                    const data = localStorage.getItem('streetLightComplaints');
+                    if (data) {
+                        complaints = JSON.parse(data);
+                        return true;
+                    }
+                    return false;
+                } catch (_) {
+                    showToast('Failed to load data from storage.', 'error');
+                    return false;
+                }
+            }
+
+            function saveToStorage() {
+                try {
+                    localStorage.setItem('streetLightComplaints', JSON.stringify(complaints));
+                } catch (_) {
+                    showToast('Failed to save data to storage.', 'error');
+                }
+            }
+
+            function loadSampleData() {
+                complaints = JSON.parse(JSON.stringify(SAMPLE_DATA));
+                saveToStorage();
+                showToast('Sample data loaded successfully!', 'success');
+                renderAll();
+            }
+
+            // ---- CRUD ----
+            function getComplaint(id) {
+                return complaints.find(c => c.fault_id === id);
+            }
+
+            function addComplaint(data) {
+                data.fault_id = generateId();
+                complaints.push(data);
+                saveToStorage();
+                renderAll();
+                showToast('Complaint added successfully!', 'success');
+            }
+
+            function updateComplaint(id, data) {
+                const idx = complaints.findIndex(c => c.fault_id === id);
+                if (idx === -1) return false;
+                data.fault_id = id;
+                complaints[idx] = data;
+                saveToStorage();
+                renderAll();
+                showToast('Complaint updated successfully!', 'success');
+                return true;
+            }
+
+            function deleteComplaint(id) {
+                complaints = complaints.filter(c => c.fault_id !== id);
+                saveToStorage();
+                renderAll();
+                showToast('Complaint deleted.', 'info');
+            }
+
+            // ---- Filter & Search ----
+            function getFilteredData() {
+                const search = searchInput.value.trim().toLowerCase();
+                const status = statusFilter.value;
+                const ward = wardFilter.value;
+
+                return complaints.filter(c => {
+                    const matchSearch = !search ||
+                        c.pole_id.toLowerCase().includes(search) ||
+                        c.ward.toLowerCase().includes(search) ||
+                        c.street.toLowerCase().includes(search) ||
+                        c.fault_type.toLowerCase().includes(search) ||
+                        c.fault_id.toLowerCase().includes(search);
+                    const matchStatus = !status || c.status === status;
+                    const matchWard = !ward || c.ward === ward;
+                    return matchSearch && matchStatus && matchWard;
+                });
+            }
+
+            function sortData(data) {
+                if (!sortKey) return data;
+                const sorted = [...data];
+                sorted.sort((a, b) => {
+                    let va, vb;
+                    if (sortKey === 'daysPending') {
+                        va = calcDaysPending(a);
+                        vb = calcDaysPending(b);
+                    } else {
+                        va = a[sortKey] || '';
+                        vb = b[sortKey] || '';
+                        if (typeof va === 'string') va = va.toLowerCase();
+                        if (typeof vb === 'string') vb = vb.toLowerCase();
+                    }
+                    if (va < vb) return sortAsc ? -1 : 1;
+                    if (va > vb) return sortAsc ? 1 : -1;
+                    return 0;
+                });
+                return sorted;
+            }
+
+            // ---- Render ----
+            function renderDashboard(data) {
+                const total = data.length;
+                const pending = data.filter(c => c.status === 'Pending' || c.status === 'In Progress').length;
+                const repaired = data.filter(c => c.status === 'Repaired').length;
+
+                let longest = 0;
+                data.forEach(c => {
+                    const d = calcDaysPending(c);
+                    if (d > longest) longest = d;
+                });
+
+                animateValue(totalCount, total);
+                animateValue(pendingCount, pending);
+                animateValue(repairedCount, repaired);
+
+                // For longest pending, if 0 show '—'
+                if (longest === 0) {
+                    longestPending.textContent = '—';
+                } else {
+                    animateValue(longestPending, longest);
+                }
+            }
+
+            function animateValue(el, target) {
+                el.textContent = target;
+                el.classList.remove('animated');
+                // Force reflow
+                void el.offsetWidth;
+                el.classList.add('animated');
+            }
+
+            function renderTable(data) {
+                const start = (currentPage - 1) * PAGE_SIZE;
+                const pageData = data.slice(start, start + PAGE_SIZE);
+
+                if (data.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="10">
+                                <div class="empty-state">
+                                    <div class="empty-icon">📭</div>
+                                    <h3>No complaints found</h3>
+                                    <p>Add a new complaint or load sample data.</p>
+                                    <button class="btn btn-primary" id="loadSampleBtn">📥 Load Sample Data</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    const btn = document.getElementById('loadSampleBtn');
+                    if (btn) btn.addEventListener('click', loadSampleData);
+                    renderPagination(data);
+                    return;
+                }
+
+                let html = '';
+                pageData.forEach(c => {
+                    const days = calcDaysPending(c);
+                    html += `
+                        <tr>
+                            <td><strong>${c.fault_id}</strong></td>
+                            <td>${c.pole_id}</td>
+                            <td>${c.ward}</td>
+                            <td>${c.street}</td>
+                            <td>${formatDate(c.reported_date)}</td>
+                            <td>${c.fault_type}</td>
+                            <td>${getStatusBadge(c.status)}</td>
+                            <td>${c.repaired_date ? formatDate(c.repaired_date) : '—'}</td>
+                            <td>${days}</td>
+                            <td>
+                                <div class="actions-cell">
+                                    <button class="btn btn-primary btn-sm edit-btn" data-id="${c.fault_id}">✏️ Edit</button>
+                                    <button class="btn btn-danger btn-sm delete-btn" data-id="${c.fault_id}">🗑️</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableBody.innerHTML = html;
+
+                // Attach event listeners
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', () => openEditModal(btn.dataset.id));
+                });
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', () => confirmDelete(btn.dataset.id));
+                });
+
+                renderPagination(data);
+            }
+
+            function renderPagination(data) {
+                const total = data.length;
+                const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+                if (currentPage > totalPages) currentPage = totalPages;
+                const start = (currentPage - 1) * PAGE_SIZE + 1;
+                const end = Math.min(start + PAGE_SIZE - 1, total);
+
+                paginationInfo.textContent = total > 0 ?
+                    `Showing ${start}–${end} of ${total}` :
+                    'No records';
+
+                pageIndicator.textContent = `${currentPage} / ${totalPages}`;
+                prevPageBtn.disabled = currentPage <= 1;
+                nextPageBtn.disabled = currentPage >= totalPages;
+            }
+
+            function renderWardFilter() {
+                const wards = getWards();
+                const current = wardFilter.value;
+                wardFilter.innerHTML = '<option value="">All Wards</option>' +
+                    wards.map(w => `<option value="${w}" ${w === current ? 'selected' : ''}>${w}</option>`).join('');
+            }
+
+            function renderAll() {
+                const data = sortData(getFilteredData());
+                filteredData = data;
+                renderDashboard(data);
+                renderTable(data);
+                renderWardFilter();
+            }
+
+            // ---- Modal ----
+            function openModal(title, subtitle, data = null) {
+                modalTitle.textContent = title;
+                modalSubtitle.textContent = subtitle;
+                editingId = data ? data.fault_id : null;
+
+                // Reset form
+                form.reset();
+                document.querySelectorAll('.validation-msg').forEach(el => el.classList.remove('visible'));
+                document.querySelectorAll('.form-group input, .form-group select').forEach(el => el.classList.remove('error'));
+
+                if (data) {
+                    formPoleId.value = data.pole_id;
+                    formWard.value = data.ward;
+                    formStreet.value = data.street;
+                    formReportedDate.value = data.reported_date;
+                    formFaultType.value = data.fault_type;
+                    formStatus.value = data.status;
+                    formRepairedDate.value = data.repaired_date || '';
+                    formSubmitBtn.textContent = 'Update';
+                } else {
+                    formSubmitBtn.textContent = 'Add Complaint';
+                    // Set default reported date to today
+                    formReportedDate.value = todayStr();
+                    formStatus.value = 'Pending';
+                    formRepairedDate.value = '';
+                }
+
+                // Toggle repaired date required
+                toggleRepairedDate();
+                modalOverlay.classList.add('active');
+            }
+
+            function closeModal() {
+                modalOverlay.classList.remove('active');
+                editingId = null;
+            }
+
+            function toggleRepairedDate() {
+                const status = formStatus.value;
+                const group = formRepairedDate.closest('.form-group');
+                const label = group.querySelector('label');
+                const input = formRepairedDate;
+                const msg = document.getElementById('formRepairedDateError');
+
+                if (status === 'Repaired') {
+                    label.innerHTML = 'Repaired Date <span class="required">*</span>';
+                    input.required = true;
+                    msg.style.display = 'block';
+                } else {
+                    label.innerHTML = 'Repaired Date';
+                    input.required = false;
+                    msg.style.display = 'none';
+                    msg.classList.remove('visible');
+                    input.classList.remove('error');
+                    input.value = '';
+                }
+            }
+
+            // ---- Form validation ----
+            function validateForm() {
+                let valid = true;
+                const fields = [
+                    { id: 'formPoleId', errorId: 'formPoleIdError', label: 'Pole ID' },
+                    { id: 'formWard', errorId: 'formWardError', label: 'Ward' },
+                    { id: 'formStreet', errorId: 'formStreetError', label: 'Street' },
+                    { id: 'formFaultType', errorId: 'formFaultTypeError', label: 'Fault Type' },
+                    { id: 'formStatus', errorId: 'formStatusError', label: 'Status' },
+                ];
+
+                fields.forEach(f => {
+                    const el = document.getElementById(f.id);
+                    const err = document.getElementById(f.errorId);
+                    if (!el.value.trim()) {
+                        el.classList.add('error');
+                        err.classList.add('visible');
+                        valid = false;
+                    } else {
+                        el.classList.remove('error');
+                        err.classList.remove('visible');
+                    }
+                });
+
+                // Reported date
+                const rDate = formReportedDate.value;
+                const rErr = document.getElementById('formReportedDateError');
+                if (!rDate) {
+                    formReportedDate.classList.add('error');
+                    rErr.textContent = 'Reported date is required.';
+                    rErr.classList.add('visible');
+                    valid = false;
+                } else if (rDate > todayStr()) {
+                    formReportedDate.classList.add('error');
+                    rErr.textContent = 'Reported date cannot be in the future.';
+                    rErr.classList.add('visible');
+                    valid = false;
+                } else {
+                    formReportedDate.classList.remove('error');
+                    rErr.classList.remove('visible');
+                }
+
+                // Repaired date when status is Repaired
+                if (formStatus.value === 'Repaired') {
+                    const rd = formRepairedDate.value;
+                    const rdErr = document.getElementById('formRepairedDateError');
+                    if (!rd) {
+                        formRepairedDate.classList.add('error');
+                        rdErr.textContent = 'Repaired date is required when status is Repaired.';
+                        rdErr.classList.add('visible');
+                        valid = false;
+                    } else if (rd < formReportedDate.value) {
+                        formRepairedDate.classList.add('error');
+                        rdErr.textContent = 'Repaired date cannot be before reported date.';
+                        rdErr.classList.add('visible');
+                        valid = false;
+                    } else {
+                        formRepairedDate.classList.remove('error');
+                        rdErr.classList.remove('visible');
+                    }
+                }
+
+                return valid;
+            }
+
+            // ---- Edit modal ----
+            function openEditModal(id) {
+                const c = getComplaint(id);
+                if (!c) {
+                    showToast('Record not found.', 'error');
+                    return;
+                }
+                openModal('Edit Complaint', 'Update the complaint details.', c);
+            }
+
+            // ---- Confirm delete ----
+            function confirmDelete(id) {
+                const c = getComplaint(id);
+                if (!c) return;
+                deleteTargetId = id;
+                confirmMessage.textContent = `Are you sure you want to delete complaint ${c.fault_id} (${c.pole_id})?`;
+                confirmOverlay.classList.add('active');
+            }
+
+            // ---- Export CSV ----
+            function exportCSV() {
+                const data = filteredData.length > 0 ? filteredData : complaints;
+                if (data.length === 0) {
+                    showToast('No data to export.', 'info');
+                    return;
+                }
+
+                const headers = ['Fault ID', 'Pole ID', 'Ward', 'Street', 'Reported Date', 'Fault Type', 'Status',
+                    'Repaired Date', 'Days Pending'
+                ];
+                const rows = data.map(c => [
+                    c.fault_id,
+                    c.pole_id,
+                    c.ward,
+                    c.street,
+                    c.reported_date,
+                    c.fault_type,
+                    c.status,
+                    c.repaired_date || '',
+                    calcDaysPending(c)
+                ]);
+
+                let csv = headers.join(',') + '\n';
+                rows.forEach(row => {
+                    csv += row.join(',') + '\n';
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `street_light_complaints_${todayStr()}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('CSV exported successfully!', 'success');
+            }
+
+            // ---- Live clock ----
+            function updateClock() {
+                const now = new Date();
+                const time = now.toLocaleTimeString('en-US', { hour12: false });
+                const date = now.toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                liveClock.textContent = time;
+                liveDate.textContent = date;
+            }
+
+            // ---- Dark mode ----
+            function toggleTheme() {
+                const current = document.documentElement.getAttribute('data-theme');
+                const next = current === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                themeToggle.textContent = next === 'dark' ? '☀️' : '🌙';
+                localStorage.setItem('theme', next);
+            }
+
+            function loadTheme() {
+                const saved = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', saved);
+                themeToggle.textContent = saved === 'dark' ? '☀️' : '🌙';
+            }
+
+            // ---- Init ----
+            async function init() {
+                // Show loading
+                await showLoading(1000);
+
+                // Load theme
+                loadTheme();
+
+                // Load data
+                const hasData = loadFromStorage();
+                if (!hasData) {
+                    // Load sample data on first open
+                    complaints = JSON.parse(JSON.stringify(SAMPLE_DATA));
+                    saveToStorage();
+                    showToast('Sample data loaded automatically.', 'info');
+                } else if (complaints.length === 0) {
+                    // If storage is empty but exists, load sample
+                    complaints = JSON.parse(JSON.stringify(SAMPLE_DATA));
+                    saveToStorage();
+                    showToast('Sample data loaded.', 'info');
+                }
+
+                // Start clock
+                updateClock();
+                setInterval(updateClock, 1000);
+
+                // Render
+                renderAll();
+
+                // ---- Event listeners ----
+
+                // Search
+                searchInput.addEventListener('input', () => {
+                    currentPage = 1;
+                    renderAll();
+                });
+
+                // Filters
+                statusFilter.addEventListener('change', () => {
+                    currentPage = 1;
+                    renderAll();
+                });
+                wardFilter.addEventListener('change', () => {
+                    currentPage = 1;
+                    renderAll();
+                });
+
+                // Add button
+                addBtn.addEventListener('click', () => {
+                    openModal('Add New Complaint', 'Fill in the details below.', null);
+                });
+
+                // Modal close
+                modalCloseBtn.addEventListener('click', closeModal);
+                formCancelBtn.addEventListener('click', closeModal);
+                modalOverlay.addEventListener('click', (e) => {
+                    if (e.target === modalOverlay) closeModal();
+                });
+
+                // Status change → toggle repaired date
+                formStatus.addEventListener('change', toggleRepairedDate);
+
+                // Form submit
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    if (!validateForm()) return;
+
+                    const data = {
+                        pole_id: formPoleId.value.trim(),
+                        ward: formWard.value.trim(),
+                        street: formStreet.value.trim(),
+                        reported_date: formReportedDate.value,
+                        fault_type: formFaultType.value,
+                        status: formStatus.value,
+                        repaired_date: formStatus.value === 'Repaired' ? formRepairedDate.value : '',
+                    };
+
+                    if (editingId) {
+                        updateComplaint(editingId, data);
+                    } else {
+                        addComplaint(data);
+                    }
+                    closeModal();
+                });
+
+                // Pagination
+                prevPageBtn.addEventListener('click', () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        renderAll();
+                    }
+                });
+                nextPageBtn.addEventListener('click', () => {
+                    const totalPages = Math.max(1, Math.ceil(filteredData.length / PAGE_SIZE));
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        renderAll();
+                    }
+                });
+
+                // Confirm delete
+                confirmCancelBtn.addEventListener('click', () => {
+                    confirmOverlay.classList.remove('active');
+                    deleteTargetId = null;
+                });
+                confirmDeleteBtn.addEventListener('click', () => {
+                    if (deleteTargetId) {
+                        deleteComplaint(deleteTargetId);
+                        deleteTargetId = null;
+                    }
+                    confirmOverlay.classList.remove('active');
+                });
+                confirmOverlay.addEventListener('click', (e) => {
+                    if (e.target === confirmOverlay) {
+                        confirmOverlay.classList.remove('active');
+                        deleteTargetId = null;
+                    }
+                });
+
+                // Theme toggle
+                themeToggle.addEventListener('click', toggleTheme);
+
+                // Export
+                exportBtn.addEventListener('click', exportCSV);
+
+                // Keyboard shortcuts: Escape closes modal
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        if (modalOverlay.classList.contains('active')) closeModal();
+                        if (confirmOverlay.classList.contains('active')) {
+                            confirmOverlay.classList.remove('active');
+                            deleteTargetId = null;
+                        }
+                    }
+                });
+
+                // Sorting on table headers
+                document.querySelectorAll('thead th.sortable').forEach(th => {
+                    th.addEventListener('click', () => {
+                        const key = th.dataset.sort;
+                        if (sortKey === key) {
+                            sortAsc = !sortAsc;
+                        } else {
+                            sortKey = key;
+                            sortAsc = true;
+                        }
+                        currentPage = 1;
+                        renderAll();
+                    });
+                });
+            }
+
+            // ---- Start ----
+            document.addEventListener('DOMContentLoaded', init);
+
+        })();
+    </script>
+
+</body>
+</html>
