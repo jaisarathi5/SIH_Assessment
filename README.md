@@ -1,261 +1,171 @@
-# Municipal Street Light Fault Register & Repair Tracker
+Municipal Street Light Fault Register & Repair Tracker
+A full‑featured single‑page web application for managing street light complaints, with simulated server‑side validation and search.
 
-A simple web application to help municipal offices register, track, and manage street light fault complaints efficiently.
+https://img.shields.io/github/repo-size/yourusername/street-light-fault-tracker
+https://img.shields.io/github/languages/count/yourusername/street-light-fault-tracker
+https://img.shields.io/github/languages/top/yourusername/street-light-fault-tracker
+https://img.shields.io/github/license/yourusername/street-light-fault-tracker
 
-This project was developed using only **HTML, CSS, JavaScript, and Local Storage** without any backend or database.
+📖 Table of Contents
+Overview
 
----
+Key Features
 
-# Problem Statement
+Technology Stack
 
-Municipal street light complaints are often recorded manually, making it difficult to track repairs, identify repeated failures, and monitor pending complaints.
+Installation & Setup
 
-This application digitizes the complaint register, allowing operators to record, update, search, filter, and monitor street light faults in a simple dashboard.
+How to Use
 
----
+Server‑Side Validation
 
-# Features
+Server‑Side Search
 
-- View all street light fault reports
-- Add new complaint
-- Edit existing complaint
-- Delete complaint
-- Instant Search
-- Filter by Status
-- Filter by Ward
-- Dashboard Statistics
-- Automatically calculate Days Pending
-- Data saved using Local Storage
-- Dark Mode
-- Export records as CSV
-- Responsive Design
-- Loading, Empty and Error States
-- Data persists after page refresh
+Project Structure
 
----
+Screenshots
 
-# Technologies Used
+Contributing
 
-- HTML5
-- CSS3
-- Vanilla JavaScript (ES6)
-- Browser Local Storage
+License
 
-No backend or external libraries were used.
+🚀 Overview
+This application helps municipal authorities register, track, and manage street light fault reports. It provides a clean dashboard, full CRUD operations, bulk actions, dark mode, and data export – all in a single HTML file.
 
----
+The project demonstrates two key server‑side behaviours (simulated in the browser for demonstration):
 
-# Project Structure
+Server‑side validation – The Pole ID field is validated against a set of rules (format, uniqueness) by a simulated server, with clear error messages.
 
-```
-Street-Light-Tracker/
-│
-├── index.html
-```
+Server‑side search – The search box queries a simulated server endpoint that returns only the matching records, instead of filtering locally.
 
----
+These changes make the application more realistic and prepare it for integration with a real backend.
 
-# Dataset Fields
+✨ Key Features
+📊 Dashboard & Chart – See total, pending, repaired, and longest‑pending complaints at a glance, plus a status distribution chart.
 
-| Field | Description |
-|--------|-------------|
-| fault_id | Unique complaint ID |
-| pole_id | Street light pole number |
-| ward | Municipal ward |
-| street | Street name |
-| reported_date | Date complaint was reported |
-| fault_type | Type of street light fault |
-| status | Pending / In Progress / Repaired |
-| repaired_date | Date complaint was repaired |
+🔍 Server‑Side Search – Search by Pole ID, Ward, Street, Fault Type, or Fault ID. The server returns only matching records.
 
----
+✏️ Full CRUD Operations – Add, edit, and delete complaints with a modal form that includes real‑time validation.
 
-# Sample Fault Types
+✅ Bulk Actions – Select multiple records to update their status in bulk or delete them all at once.
 
-- Bulb Failure
-- Pole Damage
-- Wiring Issue
-- Light Flickering
-- Complete Outage
-- Sensor Failure
-- Electrical Fault
-- Timer Issue
-- Physical Damage
-- Dim Light
+📥 Export Data – Download your data as CSV or JSON.
 
----
+🌙 Dark Mode – Toggle between light and dark themes (preference saved in localStorage).
 
-# Status Values
+⌨️ Keyboard Shortcuts – Ctrl+N to add a new record, Ctrl+F to focus the search, Esc to close modals.
 
-- Pending
-- In Progress
-- Repaired
+📱 Responsive – Works on desktops, tablets, and mobile devices.
 
----
+💾 Local Storage – All data is persisted in your browser.
 
-# Derived Value
+🛠️ Technology Stack
+HTML5 – Semantic markup
 
-## Days Pending
+CSS3 – Custom properties (theming), Flexbox, Grid, animations
 
-The application automatically calculates the number of days for every complaint.
+JavaScript (ES6) – Vanilla JS, async/await, Promises, DOM manipulation
 
-### Formula
+LocalStorage – Client‑side data persistence
 
-If Status = Repaired
+No external libraries or frameworks are used – everything is vanilla for maximum portability.
 
-```
-Days Pending = Repaired Date − Reported Date
-```
+📦 Installation & Setup
+This is a single‑page application, so no build tools or server are required.
 
-Otherwise
+Clone the repository:
 
-```
-Days Pending = Today's Date − Reported Date
-```
+bash
+git clone https://github.com/yourusername/street-light-fault-tracker.git
+cd street-light-fault-tracker
+Open the index.html file in your browser:
 
-This value updates automatically whenever a complaint is edited.
+Double‑click the file, or
 
----
+Use a local development server (e.g., VS Code Live Server, Python http.server, etc.)
 
-# Dashboard
+That’s it! The application will load with sample data automatically.
 
-The dashboard displays
+🧑‍💻 How to Use
+🔹 Server‑Side Validation (Pole ID)
+When adding or editing a complaint, the Pole ID field is validated by a simulated server.
+The validation checks:
 
-- Total Complaints
-- Pending Complaints
-- Repaired Complaints
-- Longest Pending Complaint
+Not empty – A message appears if the field is blank.
 
-These statistics update automatically after every operation.
+Format – Must be in the format P-XXXX where X is a digit (3 or 4 digits after the dash).
+✅ Examples: P-1024, P-2056
+❌ Examples: P-123, P-12A, 1024, P-12345
 
----
+Uniqueness – The ID cannot already exist in the system (case‑insensitive).
 
-# Search & Filter
+As you type, a spinner appears while the “server” checks the value.
+If the ID is invalid, a clear error message is shown next to the field, and the form will not submit until the error is fixed.
 
-Users can search by
+🔹 Server‑Side Search
+The search box at the top sends your query to a simulated server, which returns only the matching records.
+The search works across:
 
-- Fault ID
-- Pole ID
-- Ward
-- Street Name
-- Fault Type
+Pole ID
 
-Filters available
+Ward
 
-- Status
-- Ward
+Street
 
----
+Fault Type
 
-# Data Storage
+Fault ID
 
-This project uses **Browser Local Storage**.
+Matching records – The result count updates (e.g., ✨ 3 matches), and the table shows only those records.
 
-All records remain saved even after refreshing or reopening the website.
+No matches – The table shows an empty state with a message like “No complaints found for ‘your‑term’” – not an error.
 
-No database or server is required.
+Clear the search – Leave the search box empty to see all records again.
 
----
+A loading indicator appears while the server is processing your request.
 
-# How to Run
+Other Features
+Dashboard – All metrics and the chart update automatically based on the current filtered data.
 
-1. Download or Clone the repository
+Bulk Actions – Select checkboxes, then use the bulk bar to update status or delete multiple records at once.
 
-```
-git clone https://github.com/yourusername/street-light-tracker.git
-```
+Export – Click the CSV or JSON buttons to download the current (filtered) data.
 
-2. Open the project folder.
+Dark Mode – Click the moon/sun icon in the header to toggle themes.
 
-3. Double-click **index.html**
+📁 Project Structure
+text
+street-light-fault-tracker/
+├── index.html          # Single file containing all HTML, CSS, and JavaScript
+└── README.md           # This file
+The entire application is self‑contained in one HTML file for simplicity. In a real project, you would split the CSS and JS into separate files.
 
-OR
+📸 Screenshots
+Add your screenshots here – for example:
 
-Open it using **Live Server** in VS Code.
+Dashboard & Chart	Server‑Side Validation
+https://screenshots/dashboard.png	https://screenshots/validation.png
+Server‑Side Search (matches)	Server‑Side Search (no matches)
+https://screenshots/search-matches.png	https://screenshots/search-no-matches.png
+🤝 Contributing
+Contributions are welcome! If you have suggestions for improvements or find a bug, please open an issue or submit a pull request.
 
-That's it.
+Fork the repository.
 
-No installation required.
+Create a new branch (git checkout -b feature/your-feature).
 
-No backend required.
+Commit your changes (git commit -m 'Add some feature').
 
----
+Push to the branch (git push origin feature/your-feature).
 
-# Testing
+Open a pull request.
 
-The application has been tested for:
+📄 License
+This project is licensed under the MIT License – see the LICENSE file for details.
 
-- Add Complaint
-- Edit Complaint
-- Delete Complaint
-- Search
-- Filter
-- CSV Export
-- Dark Mode
-- Pagination
-- Local Storage Persistence
-- Loading State
-- Empty State
-- Validation Errors
+🙏 Acknowledgements
+Icons and emojis used for better UX.
 
----
+Inspired by real‑world municipal fault management systems.
 
-# Validation Rules
-
-- Pole ID cannot be empty.
-- Ward cannot be empty.
-- Street cannot be empty.
-- Reported Date cannot be a future date.
-- Status is mandatory.
-- Repaired Date is required when Status is "Repaired".
-- Repaired Date cannot be earlier than Reported Date.
-
----
-
-# Screenshots
-
-<img width="1917" height="901" alt="image" src="https://github.com/user-attachments/assets/599179ad-2f54-4d89-aea9-1a4c77d63153" />
-<img width="1917" height="913" alt="Screenshot 2026-07-26 204841" src="https://github.com/user-attachments/assets/9eecdc90-ddb5-4f2e-8386-eebc0e44024e" />
-[Screen Recording 2026-07-26 204425 - Trim (2).zip](https://github.com/user-attachments/files/30389673/Screen.Recording.2026-07-26.204425.-.Trim.2.zip)
-
-
-# Future Improvements
-
-- Login Authentication
-- Admin Dashboard
-- Email Notifications
-- GPS Location Mapping
-- Complaint Images
-- Real Database Integration
-- Google Maps Support
-- SMS Alerts
-- Multi-user Access
-- Cloud Deployment
-
----
-
-# Known Limitations
-
-- Uses Local Storage instead of a database.
-- Works only in the current browser.
-- No user authentication.
-- No real-time synchronization.
-- No map integration.
-
----
-
-# Author
-
-**Jaisarathi V**
-
-B.Tech Artificial Intelligence and Data Science
-
-GitHub: https://github.com/jaisarathi5
-
-LinkedIn: https://www.linkedin.com/in/jai-sarathi-v-546a38385/
-
----
-
-# 📄 License
-
-This project is developed for educational purposes as part of the **SIH 2026 Practical Assessment**.
+Happy tracking! 💡🔧
