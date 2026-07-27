@@ -1,10 +1,6 @@
 Municipal Street Light Fault Register & Repair Tracker
 A full‑featured single‑page web application for managing street light complaints, with simulated server‑side validation and search.
 
-https://img.shields.io/github/repo-size/yourusername/street-light-fault-tracker
-https://img.shields.io/github/languages/count/yourusername/street-light-fault-tracker
-https://img.shields.io/github/languages/top/yourusername/street-light-fault-tracker
-https://img.shields.io/github/license/yourusername/street-light-fault-tracker
 
 📖 Table of Contents
 Overview
@@ -139,16 +135,6 @@ street-light-fault-tracker/
 ├── index.html          # Single file containing all HTML, CSS, and JavaScript
 └── README.md           # This file
 The entire application is self‑contained in one HTML file for simplicity. In a real project, you would split the CSS and JS into separate files.
-
-📸 Screenshots
-Add your screenshots here – for example:
-
-Dashboard & Chart	Server‑Side Validation
-https://screenshots/dashboard.png	https://screenshots/validation.png
-Server‑Side Search (matches)	Server‑Side Search (no matches)
-https://screenshots/search-matches.png	https://screenshots/search-no-matches.png
-🤝 Contributing
-Contributions are welcome! If you have suggestions for improvements or find a bug, please open an issue or submit a pull request.
 
 Fork the repository.
 
